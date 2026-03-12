@@ -1,0 +1,10 @@
+workerType: NODE_ROLE_PUBLISHER
+workerId: 1
+workerRegion: Manila
+workerMgrAddr: ws://localhost:8090/ws/mmx
+authApiAddr: http://localhost:8090/auth/generate
+publishUrl: srt://localhost:8890?streamid=publish:appbd4cd2aa7be8/simulcast-fwv:<user>:<password>&pkt_size=1316&latency=200
+publishUrl2: srt://localhost:8990?streamid=publish:appbd4cd2aa7be8/simulcast-fwv:<user>:<password>&pkt_size=1316
+inputFile: video="OBS Virtual Camera"
+videoLayout: portrait
+publishOnReady: true
