@@ -1,0 +1,9 @@
+workerType: NODE_ROLE_PUBLISHER
+workerId: 1
+workerRegion: Manila
+workerMgrAddr: ws://localhost:8090/ws/mmx
+authApiAddr: http://localhost:8090/auth/generate
+publishUrl: srt://localhost:8890?streamid=publish:live/simulcast-fwv:<user>:<password>&pkt_size=1316&latency=200
+inputFile: sanbado01.mp4
+videoLayout: landscape
+publishOnReady: true

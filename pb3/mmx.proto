@@ -1,0 +1,68 @@
+﻿syntax = "proto3";
+package pb3;
+option go_package = "./pb3";
+//protoc --go_out ./ ./pb3/mmx.proto
+
+// streamId = {appId}/{tableId}-{viewId}
+// SRT推流地址格式: srt://IP:port?streamid=publish:{appId}/{tableId}-{viewId}
+// webrtc拉流地址格式: http://IP:port/{appId}/{tableId}-{viewId}/whep
+// 录像文件命名规则：{tableId}-{viewId}-{gameId}-{roundId}.mp4
+// 回放地址规则: https://xxxx.cloudfront.net/{env}/录像文件名
+// appId: 区分多租户，商户在注册时由平台分配。tableId: 游戏桌台编号，一个桌台允许多个视角(viewId)。
+// 推流或录像时，多视角同时进行。gameId：游戏类型编号，roundId: 游戏局号。
+
+enum NodeRole {
+  NODE_ROLE_UNSPECIFIED = 0;
+
+  NODE_ROLE_PUBLISHER   = 1;
+  NODE_ROLE_ORIGIN      = 2;
+  NODE_ROLE_RECORDER    = 3;
+  NODE_ROLE_EDGE        = 4;
+  NODE_ROLE_PLAYER      = 5;
+}
+
+enum CommandType {
+  COMMAND_TYPE_UNSPECIFIED = 0;   // 必须有，作为默认/未知值
+
+  COMMAND_TYPE_START_PUB    = 1;
+  COMMAND_TYPE_STOP_PUB     = 2;
+  COMMAND_TYPE_SPLIT_REC    = 3;
+  COMMAND_TYPE_STATUS       = 4;
+  COMMAND_TYPE_INDICATION   = 5;
+  COMMAND_TYPE_RESPONSE     = 6;
+}
+
+//定时(60s)上报VLB，用于更新节点处理能力(用pipeline衡量)。
+message WorkerIndication {
+    string msgType = 1;     //refer keys in enum CommandType
+    string workerType = 2;  //refer keys in enum NodeRole
+	sint32 workerId = 3;     // instance编号(1,2,3,...)部署时确定
+    string version = 4;
+    string region = 5;     //region: Manila, Hongkong. 部署时确定
+
+    int32 capacity = 6;     //capactiy of node. capacity of paths/recorders/players
+    repeated string pipelines = 7;     //streamId list reside in pipelines
+    optional string webrtcBaseUrl = 8; // 仅 edgeNode 节点，WebRTC 播放基础地址
+    optional string publishUrl = 9; // 仅 publisher 节点，SRT推流地址
+}
+
+message NodeMsgReq {
+    string msgType = 1;   //refer keys in enum CommandType
+    string workerType = 2; //refer keys in enum NodeRole
+    sint32 workerId = 3;
+    
+    string streamPath = 4;
+    string signature = 5;  //signature=MD5(fields...)，前面全部字段md5累加和。
+    string msgId = 6;  //消息幂等使用
+    optional string publishUrl = 7; // targeted publish URL for publisher control
+}
+
+message NodeMsgRsp {
+    string msgType = 1; //refer keys in enum CommandType
+    string workerType = 2;  //refer keys in enum NodeRole
+    sint32 workerId = 3;
+
+    sint32 code = 4;     //0:success, n: error code.
+    string reason = 5;  //错误解释
+    string msgId = 6;  //消息证实使用. =NodeMsgReq.msgId.
+}
